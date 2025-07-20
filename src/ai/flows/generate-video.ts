@@ -8,12 +8,15 @@
 
 import { ai } from '@/ai/genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { MediaPart } from 'genkit/model';
+import type { MediaPart } from 'genkit/model';
 import { GenerateVideoInput, GenerateVideoInputSchema, GenerateVideoOutputSchema } from '@/ai/schemas/video-schemas';
 
 async function toBase64(url: string): Promise<string> {
     const fetch = (await import('node-fetch')).default;
     const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+    }
     const buffer = await response.arrayBuffer();
     return Buffer.from(buffer).toString('base64');
 }
@@ -64,16 +67,17 @@ const generateVideoFlow = ai.defineFlow(
     const video = operation.output?.message?.content.find((p) => !!p.media) as MediaPart | undefined;
     
     if (!video || !video.media?.url) {
-      throw new Error('Failed to find the generated video');
+      throw new Error('Failed to find the generated video in the model response.');
     }
     
     let videoBase64: string;
-    // The key is required for downloading the video from the GCS bucket.
-    if (process.env.GEMINI_API_KEY) {
-        videoBase64 = await toBase64(`${video.media.url}&key=${process.env.GEMINI_API_KEY}`);
-    } else {
-        // Fallback for environments where the key might not be set, though this is less reliable.
-        videoBase64 = await toBase64(video.media.url);
+    const videoUrlWithKey = `${video.media.url}&key=${process.env.GEMINI_API_KEY}`;
+    
+    try {
+        videoBase64 = await toBase64(videoUrlWithKey);
+    } catch (e: any) {
+        console.error("Failed to download and encode video:", e.message);
+        throw new Error("Could not retrieve the generated video file.");
     }
     
     return {
