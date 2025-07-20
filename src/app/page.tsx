@@ -391,14 +391,14 @@ export default function Home() {
             <Accordion type="single" collapsible className="w-full">
               {savedRecipes.map(recipe => (
                 <AccordionItem key={recipe.title} value={recipe.title}>
-                  <AccordionTrigger className="font-headline text-xl hover:no-underline">
-                    <div className="flex justify-between items-center w-full pr-4">
-                      <span>{recipe.title}</span>
-                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDeleteRecipe(recipe.title); }}>
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </AccordionTrigger>
+                  <div className="flex items-center pr-4">
+                    <AccordionTrigger className="font-headline text-xl hover:no-underline flex-1">
+                      {recipe.title}
+                    </AccordionTrigger>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0" onClick={() => handleDeleteRecipe(recipe.title)}>
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
                   <AccordionContent className="p-4 flex flex-col sm:flex-row gap-4">
                     {recipe.imageUrls && recipe.imageUrls.length > 0 && (
                          <div className="w-full sm:w-1/3">
