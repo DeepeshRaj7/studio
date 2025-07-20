@@ -14,20 +14,24 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 const DIETARY_STORAGE_KEY = 'whatCanICook-dietary';
+const CUISINE_STORAGE_KEY = 'whatCanICook-cuisine';
 
 const DIETARY_OPTIONS = ["Vegan", "Gluten-Free"];
+const CUISINE_OPTIONS = ["Any", "Italian", "Mexican", "Indian", "Chinese", "Japanese", "Thai", "French", "Greek"];
 
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [servings, setServings] = useState(2);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [cuisine, setCuisine] = useState('Any');
   const [generatedRecipe, setGeneratedRecipe] = useState<GenerateRecipeOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +51,10 @@ export default function Home() {
       const storedDietary = localStorage.getItem(DIETARY_STORAGE_KEY);
       if (storedDietary) {
         setDietaryRestrictions(JSON.parse(storedDietary));
+      }
+       const storedCuisine = localStorage.getItem(CUISINE_STORAGE_KEY);
+      if (storedCuisine) {
+        setCuisine(JSON.parse(storedCuisine));
       }
     } catch (e) {
       console.error("Failed to parse from localStorage", e);
@@ -69,6 +77,10 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes));
   }, [savedRecipes]);
+
+  useEffect(() => {
+    localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisine));
+  }, [cuisine]);
 
   const handleAddIngredient = (e: FormEvent) => {
     e.preventDefault();
@@ -108,6 +120,7 @@ export default function Home() {
         servings: servings,
         previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
         dietaryRestrictions: dietaryRestrictions,
+        cuisine: cuisine,
       });
       setGeneratedRecipe(result);
       if (result.imageUrls.some(url => url.startsWith('https://placehold.co'))) {
@@ -156,7 +169,7 @@ export default function Home() {
         <header className="text-center mb-10">
           <div className="flex justify-center items-center gap-4 mb-2">
             <UtensilsCrossed className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">What Can I Cook</h1>
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Fridge Feast</h1>
           </div>
           <p className="text-lg text-muted-foreground">Your personal chef for ingredients on hand.</p>
         </header>
@@ -166,9 +179,9 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="font-headline text-2xl flex items-center gap-2">
                 <ChefHat className="h-6 w-6 text-primary" />
-                Your Ingredients
+                Your Kitchen
               </CardTitle>
-              <CardDescription>Add what's in your fridge, and we'll whip up a recipe.</CardDescription>
+              <CardDescription>Add what you have, set your preferences, and let's get cooking.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddIngredient} className="flex gap-2 mb-4">
@@ -194,28 +207,46 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="mb-4">
-                 <Label className="flex items-center gap-2 mb-2 font-headline text-md">
-                   <Leaf className="h-5 w-5" />
-                   Dietary Preferences
-                 </Label>
-                 <div className="flex flex-wrap gap-x-4 gap-y-2">
-                   {DIETARY_OPTIONS.map(option => (
-                     <div key={option} className="flex items-center space-x-2">
-                       <Checkbox
-                         id={option}
-                         checked={dietaryRestrictions.includes(option)}
-                         onCheckedChange={() => handleDietaryChange(option)}
-                       />
-                       <label
-                         htmlFor={option}
-                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                       >
-                         {option}
-                       </label>
-                     </div>
-                   ))}
-                 </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                   <Label className="flex items-center gap-2 mb-2 font-headline text-md">
+                     <Leaf className="h-5 w-5" />
+                     Dietary Preferences
+                   </Label>
+                   <div className="flex flex-col gap-2">
+                     {DIETARY_OPTIONS.map(option => (
+                       <div key={option} className="flex items-center space-x-2">
+                         <Checkbox
+                           id={option}
+                           checked={dietaryRestrictions.includes(option)}
+                           onCheckedChange={() => handleDietaryChange(option)}
+                         />
+                         <label
+                           htmlFor={option}
+                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                         >
+                           {option}
+                         </label>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="cuisine" className="flex items-center gap-2 mb-2 font-headline text-md">
+                    <Globe className="h-5 w-5" />
+                    Cuisine
+                  </Label>
+                  <Select value={cuisine} onValueChange={setCuisine}>
+                    <SelectTrigger id="cuisine">
+                      <SelectValue placeholder="Select a cuisine" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CUISINE_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               <div className="mb-4">

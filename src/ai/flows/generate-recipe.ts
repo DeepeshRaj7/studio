@@ -17,7 +17,8 @@ const GenerateRecipeInputSchema = z.object({
     .describe('A comma separated list of ingredients to use in the recipe.'),
   previousRecipeTitle: z.string().optional().describe('The title of the previously generated recipe, to avoid duplicates.'),
   servings: z.number().optional().describe('The number of people to cook for.'),
-  dietaryRestrictions: z.array(z.string()).optional().describe('A list of dietary restrictions to apply, e.g., "Vegetarian", "Gluten-Free".'),
+  dietaryRestrictions: z.array(z.string()).optional().describe('A list of dietary restrictions to apply, e.g., "Vegan", "Gluten-Free".'),
+  cuisine: z.string().optional().describe('The desired cuisine style for the recipe, e.g., "Italian", "Mexican".'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -53,6 +54,10 @@ const recipePrompt = ai.definePrompt({
   {{#if servings}}
   The recipe should be for {{{servings}}} people. Please adjust ingredient quantities accordingly.
   {{/if}}
+
+  {{#if cuisine}}
+  The recipe should be in the style of {{{cuisine}}} cuisine.
+  {{/if}}
   
   {{#if dietaryRestrictions.length}}
   Important: The recipe must adhere to the following dietary restrictions: {{#each dietaryRestrictions}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}. If any of the provided ingredients conflict with these restrictions, please ignore the conflicting ingredients and create a valid recipe.
@@ -81,6 +86,10 @@ const generateRecipeFlow = ai.defineFlow(
     outputSchema: GenerateRecipeOutputSchema,
   },
   async input => {
+    // If cuisine is 'Any', remove it so it's not passed to the prompt
+    if (input.cuisine === 'Any') {
+        input.cuisine = undefined;
+    }
     const {output: recipeDetails} = await recipePrompt(input);
     if (!recipeDetails) {
         throw new Error('Failed to generate recipe details.');
