@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle } from 'lucide-react';
 
-const INGREDIENTS_STORAGE_KEY = 'fridgeFeast-ingredients';
-const RECIPES_STORAGE_KEY = 'fridgeFeast-savedRecipes';
+const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
+const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
@@ -118,7 +118,7 @@ export default function Home() {
         <header className="text-center mb-10">
           <div className="flex justify-center items-center gap-4 mb-2">
             <UtensilsCrossed className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Fridge Feast</h1>
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">What Can I Cook</h1>
           </div>
           <p className="text-lg text-muted-foreground">Your personal chef for ingredients on hand.</p>
         </header>

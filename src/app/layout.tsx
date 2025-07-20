@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Fridge Feast',
+  title: 'What Can I Cook',
   description: 'Generate recipes from ingredients you have.',
 };
 
