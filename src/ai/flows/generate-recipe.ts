@@ -70,7 +70,7 @@ const generateRecipeFlow = ai.defineFlow(
           model: 'googleai/gemini-2.0-flash-preview-image-generation',
           prompt: `A photorealistic image of ${recipeDetails.title}, professionally plated.`,
           config: {
-            responseModalities: ['IMAGE'],
+            responseModalities: ['IMAGE', 'TEXT'],
           },
         });
         if (media && media.url) {
