@@ -55,7 +55,7 @@ const recipePrompt = ai.definePrompt({
   {{/if}}
   
   {{#if dietaryRestrictions.length}}
-  Important: The recipe must adhere to the following dietary restrictions: {{#each dietaryRestrictions}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
+  Important: The recipe must adhere to the following dietary restrictions: {{#each dietaryRestrictions}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}. If any of the provided ingredients conflict with these restrictions, please ignore the conflicting ingredients and create a valid recipe.
   {{/if}}
 
   {{#if previousRecipeTitle}}
