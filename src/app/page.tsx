@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
 import { generateRecipe, GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
+import { generateVideo, GenerateVideoOutput } from '@/ai/flows/generate-video';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,16 +12,20 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Video, Film } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 
+type RecipeWithVideo = GenerateRecipeOutput & { videoUrl?: string };
+
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
-  const [generatedRecipe, setGeneratedRecipe] = useState<GenerateRecipeOutput | null>(null);
+  const [generatedRecipe, setGeneratedRecipe] = useState<RecipeWithVideo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<GenerateRecipeOutput[]>([]);
   const { toast } = useToast();
@@ -104,9 +109,34 @@ export default function Home() {
     }
   };
 
+  const handleGenerateVideo = async () => {
+    if (!generatedRecipe || generatedRecipe.videoUrl) return;
+
+    setIsVideoLoading(true);
+    try {
+      const result = await generateVideo({
+        title: generatedRecipe.title,
+        instructions: generatedRecipe.instructions,
+        imageUrl: generatedRecipe.imageUrl,
+      });
+      setGeneratedRecipe(prev => prev ? { ...prev, videoUrl: result.videoUrl } : null);
+    } catch (e) {
+      console.error(e);
+      toast({
+        variant: "destructive",
+        title: "Video Generation Failed",
+        description: "Could not generate a video for this recipe. Please try again later.",
+      });
+    } finally {
+      setIsVideoLoading(false);
+    }
+  };
+
   const handleSaveRecipe = () => {
     if (generatedRecipe && !savedRecipes.some(r => r.title === generatedRecipe.title)) {
-      setSavedRecipes([...savedRecipes, generatedRecipe]);
+      // Don't save the videoUrl to localStorage
+      const { videoUrl, ...recipeToSave } = generatedRecipe;
+      setSavedRecipes([...savedRecipes, recipeToSave]);
       toast({
         title: "Recipe Saved!",
         description: `"${generatedRecipe.title}" has been added to your collection.`,
@@ -185,37 +215,64 @@ export default function Home() {
                   <CardTitle className="font-headline text-2xl">{generatedRecipe.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4">
-                  {generatedRecipe.imageUrl ? (
-                      <Image 
-                        src={generatedRecipe.imageUrl}
-                        alt={generatedRecipe.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-auto rounded-md object-cover"
-                        data-ai-hint="recipe food"
-                      />
-                  ) : (
-                    <div className="w-full aspect-[3/2] bg-muted rounded-md flex flex-col items-center justify-center">
-                        <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                        <p className="text-muted-foreground mt-2">No image available</p>
-                    </div>
-                  )}
-                  </div>
-                  <h3 className="font-bold font-headline mb-2 text-lg">Ingredients</h3>
-                  <p className="text-muted-foreground mb-4">{generatedRecipe.ingredients}</p>
-                  <h3 className="font-bold font-headline mb-2 text-lg">Instructions</h3>
-                  <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                    {generatedRecipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
-                      <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
-                    ))}
-                  </ol>
+                  <Tabs defaultValue="recipe" className="w-full" onValueChange={(value) => {
+                      if (value === 'video') handleGenerateVideo();
+                  }}>
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="recipe"><UtensilsCrossed className="mr-2 h-4 w-4" />Recipe</TabsTrigger>
+                      <TabsTrigger value="video"><Video className="mr-2 h-4 w-4" />Video</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="recipe">
+                      <div className="mt-4 mb-4">
+                      {generatedRecipe.imageUrl ? (
+                          <Image 
+                            src={generatedRecipe.imageUrl}
+                            alt={generatedRecipe.title}
+                            width={600}
+                            height={400}
+                            className="w-full h-auto rounded-md object-cover"
+                            data-ai-hint="recipe food"
+                          />
+                      ) : (
+                        <div className="w-full aspect-[3/2] bg-muted rounded-md flex flex-col items-center justify-center">
+                            <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                            <p className="text-muted-foreground mt-2">No image available</p>
+                        </div>
+                      )}
+                      </div>
+                      <h3 className="font-bold font-headline mb-2 text-lg">Ingredients</h3>
+                      <p className="text-muted-foreground mb-4">{generatedRecipe.ingredients}</p>
+                      <h3 className="font-bold font-headline mb-2 text-lg">Instructions</h3>
+                      <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                        {generatedRecipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
+                          <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
+                        ))}
+                      </ol>
+                    </TabsContent>
+                    <TabsContent value="video">
+                      <div className="mt-4 w-full aspect-video flex items-center justify-center bg-black rounded-md">
+                        {isVideoLoading ? (
+                          <div className="text-center text-white">
+                            <Film className="h-12 w-12 mx-auto animate-spin" />
+                            <p className="mt-4 text-lg">Generating video... this may take a minute.</p>
+                          </div>
+                        ) : generatedRecipe.videoUrl ? (
+                          <video controls src={generatedRecipe.videoUrl} className="w-full h-full rounded-md" />
+                        ) : (
+                          <div className="text-center text-muted-foreground">
+                             <p>Click the "Video" tab to generate video instructions.</p>
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+
                   <div className="flex gap-2 w-full mt-6">
-                    <Button onClick={() => handleGenerateRecipe(true)} variant="outline" className="w-full" disabled={isLoading}>
+                    <Button onClick={() => handleGenerateRecipe(true)} variant="outline" className="w-full" disabled={isLoading || isVideoLoading}>
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Generate Another
                     </Button>
-                    <Button onClick={handleSaveRecipe} disabled={isRecipeSaved || isLoading} className="w-full">
+                    <Button onClick={handleSaveRecipe} disabled={isRecipeSaved || isLoading || isVideoLoading} className="w-full">
                       <Save className="mr-2 h-4 w-4" />
                       {isRecipeSaved ? 'Saved' : 'Save Recipe'}
                     </Button>
