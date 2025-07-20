@@ -68,10 +68,11 @@ const generateVideoFlow = ai.defineFlow(
     }
     
     let videoBase64: string;
-    // The key might not be needed for all environments, so we add a check.
+    // The key is required for downloading the video from the GCS bucket.
     if (process.env.GEMINI_API_KEY) {
         videoBase64 = await toBase64(`${video.media.url}&key=${process.env.GEMINI_API_KEY}`);
     } else {
+        // Fallback for environments where the key might not be set, though this is less reliable.
         videoBase64 = await toBase64(video.media.url);
     }
     
