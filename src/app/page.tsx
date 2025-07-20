@@ -21,7 +21,7 @@ const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 const DIETARY_STORAGE_KEY = 'whatCanICook-dietary';
 
-const DIETARY_OPTIONS = ["Vegetarian", "Vegan", "Gluten-Free"];
+const DIETARY_OPTIONS = ["Vegan", "Gluten-Free"];
 
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
