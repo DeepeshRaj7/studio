@@ -16,6 +16,7 @@ const GenerateRecipeInputSchema = z.object({
     .string()
     .describe('A comma separated list of ingredients to use in the recipe.'),
   previousRecipeTitle: z.string().optional().describe('The title of the previously generated recipe, to avoid duplicates.'),
+  servings: z.number().optional().describe('The number of people to cook for.'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -37,12 +38,16 @@ const recipePrompt = ai.definePrompt({
   input: {schema: GenerateRecipeInputSchema},
   output: {schema: z.object({
     title: z.string().describe('The title of the recipe.'),
-    ingredients: z.string().describe('The ingredients required for the recipe.'),
+    ingredients: z.string().describe('The ingredients required for the recipe, with measurements.'),
     instructions: z.string().describe('The instructions for the recipe.'),
   })},
   prompt: `You are a world-class chef. Generate a recipe based on the ingredients provided.
 
   Ingredients: {{{ingredients}}}
+
+  {{#if servings}}
+  The recipe should be for {{{servings}}} people. Please adjust ingredient quantities accordingly.
+  {{/if}}
 
   {{#if previousRecipeTitle}}
   Please generate a different recipe than "{{{previousRecipeTitle}}}".
@@ -51,7 +56,7 @@ const recipePrompt = ai.definePrompt({
   Format the response as follows:
 
   Title: [Recipe Title]
-  Ingredients: [Comma separated list of ingredients]
+  Ingredients: [Comma separated list of ingredients with quantities]
   Instructions: [Step-by-step instructions]`,
 });
 

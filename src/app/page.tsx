@@ -6,6 +6,7 @@ import { generateRecipe } from '@/ai/flows/generate-recipe';
 import type { GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
@@ -21,6 +22,7 @@ const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
+  const [servings, setServings] = useState(2);
   const [generatedRecipe, setGeneratedRecipe] = useState<GenerateRecipeOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,7 @@ export default function Home() {
     try {
       const result = await generateRecipe({ 
         ingredients: ingredients.join(', '),
+        servings: servings,
         previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
       });
       setGeneratedRecipe(result);
@@ -160,7 +163,7 @@ export default function Home() {
                   <PlusCircle />
                 </Button>
               </form>
-              <div className="flex flex-wrap gap-2 min-h-[40px]">
+              <div className="flex flex-wrap gap-2 mb-4 min-h-[40px]">
                 {ingredients.map(ingredient => (
                   <Badge key={ingredient} variant="secondary" className="text-lg py-1 px-3">
                     {ingredient}
@@ -170,6 +173,22 @@ export default function Home() {
                   </Badge>
                 ))}
               </div>
+
+              <div className="mb-4">
+                <Label htmlFor="servings" className="flex items-center gap-2 mb-2 font-headline text-md">
+                  <Users className="h-5 w-5" />
+                  How many people?
+                </Label>
+                <Input
+                  id="servings"
+                  type="number"
+                  value={servings}
+                  onChange={(e) => setServings(Math.max(1, parseInt(e.target.value) || 1))}
+                  min="1"
+                  className="w-24"
+                />
+              </div>
+
               <Button onClick={() => handleGenerateRecipe()} disabled={ingredients.length === 0 || isLoading} className="w-full mt-6 text-lg py-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Sparkles className="mr-2 h-5 w-5" />
                 {isLoading ? 'Generating...' : 'Generate Recipe'}
