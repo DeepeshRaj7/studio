@@ -91,6 +91,7 @@ export default function Home() {
         toast({
             title: "Image Generation Partial Fail",
             description: "Could not generate all images, but here is your recipe!",
+            variant: "destructive",
           });
       }
     } catch (e) {
