@@ -80,6 +80,12 @@ export default function Home() {
     try {
       const result = await generateRecipe({ ingredients: ingredients.join(', ') });
       setGeneratedRecipe(result);
+      if (result.imageUrl.startsWith('https://placehold.co')) {
+        toast({
+            title: "Image Generation Skipped",
+            description: "Could not generate a custom image, but here is your recipe!",
+          });
+      }
     } catch (e) {
       console.error(e);
       setError('An error occurred while generating the recipe. Please try again.');

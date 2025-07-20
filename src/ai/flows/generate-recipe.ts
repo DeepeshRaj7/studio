@@ -63,15 +63,23 @@ const generateRecipeFlow = ai.defineFlow(
         throw new Error('Failed to generate recipe details.');
     }
 
-    const {media} = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `A photorealistic image of ${recipeDetails.title}, professionally plated.`,
-      config: {
-        responseModalities: ['IMAGE'],
-      },
-    });
+    let imageUrl = `https://placehold.co/600x400.png?text=${encodeURIComponent(recipeDetails.title)}`;
 
-    const imageUrl = media.url || `https://placehold.co/600x400.png?text=${encodeURIComponent(recipeDetails.title)}`;
+    try {
+        const {media} = await ai.generate({
+          model: 'googleai/gemini-2.0-flash-preview-image-generation',
+          prompt: `A photorealistic image of ${recipeDetails.title}, professionally plated.`,
+          config: {
+            responseModalities: ['IMAGE'],
+          },
+        });
+        if (media && media.url) {
+            imageUrl = media.url;
+        }
+    } catch (e) {
+        console.error("Image generation failed, using placeholder.", e);
+    }
+    
 
     return {
         ...recipeDetails,
