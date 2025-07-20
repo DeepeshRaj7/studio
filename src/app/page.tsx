@@ -13,16 +13,21 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
+const DIETARY_STORAGE_KEY = 'whatCanICook-dietary';
+
+const DIETARY_OPTIONS = ["Vegetarian", "Vegan", "Gluten-Free"];
 
 export default function Home() {
   const [newIngredient, setNewIngredient] = useState('');
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [servings, setServings] = useState(2);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [generatedRecipe, setGeneratedRecipe] = useState<GenerateRecipeOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +44,10 @@ export default function Home() {
       if (storedRecipes) {
         setSavedRecipes(JSON.parse(storedRecipes));
       }
+      const storedDietary = localStorage.getItem(DIETARY_STORAGE_KEY);
+      if (storedDietary) {
+        setDietaryRestrictions(JSON.parse(storedDietary));
+      }
     } catch (e) {
       console.error("Failed to parse from localStorage", e);
       toast({
@@ -52,6 +61,10 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem(INGREDIENTS_STORAGE_KEY, JSON.stringify(ingredients));
   }, [ingredients]);
+  
+  useEffect(() => {
+    localStorage.setItem(DIETARY_STORAGE_KEY, JSON.stringify(dietaryRestrictions));
+  }, [dietaryRestrictions]);
 
   useEffect(() => {
     localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes));
@@ -67,6 +80,12 @@ export default function Home() {
 
   const handleRemoveIngredient = (ingredientToRemove: string) => {
     setIngredients(ingredients.filter(i => i !== ingredientToRemove));
+  };
+  
+  const handleDietaryChange = (option: string) => {
+    setDietaryRestrictions(prev => 
+      prev.includes(option) ? prev.filter(item => item !== option) : [...prev, option]
+    );
   };
 
   const handleGenerateRecipe = async (regenerate = false) => {
@@ -88,6 +107,7 @@ export default function Home() {
         ingredients: ingredients.join(', '),
         servings: servings,
         previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
+        dietaryRestrictions: dietaryRestrictions,
       });
       setGeneratedRecipe(result);
       if (result.imageUrls.some(url => url.startsWith('https://placehold.co'))) {
@@ -174,6 +194,30 @@ export default function Home() {
                 ))}
               </div>
 
+              <div className="mb-4">
+                 <Label className="flex items-center gap-2 mb-2 font-headline text-md">
+                   <Leaf className="h-5 w-5" />
+                   Dietary Preferences
+                 </Label>
+                 <div className="flex flex-wrap gap-x-4 gap-y-2">
+                   {DIETARY_OPTIONS.map(option => (
+                     <div key={option} className="flex items-center space-x-2">
+                       <Checkbox
+                         id={option}
+                         checked={dietaryRestrictions.includes(option)}
+                         onCheckedChange={() => handleDietaryChange(option)}
+                       />
+                       <label
+                         htmlFor={option}
+                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                       >
+                         {option}
+                       </label>
+                     </div>
+                   ))}
+                 </div>
+              </div>
+              
               <div className="mb-4">
                 <Label htmlFor="servings" className="flex items-center gap-2 mb-2 font-headline text-md">
                   <Users className="h-5 w-5" />

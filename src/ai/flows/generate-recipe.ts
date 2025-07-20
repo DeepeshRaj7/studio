@@ -17,6 +17,7 @@ const GenerateRecipeInputSchema = z.object({
     .describe('A comma separated list of ingredients to use in the recipe.'),
   previousRecipeTitle: z.string().optional().describe('The title of the previously generated recipe, to avoid duplicates.'),
   servings: z.number().optional().describe('The number of people to cook for.'),
+  dietaryRestrictions: z.array(z.string()).optional().describe('A list of dietary restrictions to apply, e.g., "Vegetarian", "Gluten-Free".'),
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -51,6 +52,10 @@ const recipePrompt = ai.definePrompt({
 
   {{#if servings}}
   The recipe should be for {{{servings}}} people. Please adjust ingredient quantities accordingly.
+  {{/if}}
+  
+  {{#if dietaryRestrictions.length}}
+  Important: The recipe must adhere to the following dietary restrictions: {{#each dietaryRestrictions}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
   {{/if}}
 
   {{#if previousRecipeTitle}}
