@@ -22,6 +22,7 @@ export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
 const GenerateRecipeOutputSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
+  cookingTime: z.string().describe('The estimated cooking time in minutes. e.g., "30-45 minutes"'),
   ingredients: z.string().describe('The ingredients required for the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
   chefCommentary: z.string().describe('A short, encouraging, and impressive sentence from the chef about the dish.'),
@@ -39,6 +40,7 @@ const recipePrompt = ai.definePrompt({
   input: {schema: GenerateRecipeInputSchema},
   output: {schema: z.object({
     title: z.string().describe('The title of the recipe.'),
+    cookingTime: z.string().describe('The estimated cooking time in minutes. e.g., "30-45 minutes"'),
     ingredients: z.string().describe('The ingredients required for the recipe, with measurements.'),
     instructions: z.string().describe('The instructions for the recipe.'),
     chefCommentary: z.string().describe('A short, encouraging, and impressive sentence from the chef about the dish. For example: "You are about to have a wonderful meal!"'),
@@ -55,11 +57,12 @@ const recipePrompt = ai.definePrompt({
   Please generate a different recipe than "{{{previousRecipeTitle}}}".
   {{/if}}
 
-  Also provide a short, single sentence of impressive commentary about the final dish.
+  Also provide the estimated cooking time and a short, single sentence of impressive commentary about the final dish.
 
   Format the response as follows:
 
   Title: [Recipe Title]
+  Cooking Time: [e.g., 25-30 minutes]
   Ingredients: [Comma separated list of ingredients with quantities]
   Instructions: [Step-by-step instructions]
   Chef's Commentary: [An impressive sentence about the dish]`,

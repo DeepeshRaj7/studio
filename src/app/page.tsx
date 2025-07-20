@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
@@ -206,6 +206,10 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="font-headline text-2xl">{generatedRecipe.title}</CardTitle>
                   <CardDescription>"{generatedRecipe.chefCommentary}"</CardDescription>
+                  <div className="flex items-center text-sm text-muted-foreground pt-2">
+                    <Clock className="h-4 w-4 mr-1.5" />
+                    <span>{generatedRecipe.cookingTime}</span>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="mt-4 mb-4">
@@ -298,6 +302,12 @@ export default function Home() {
                         </div>
                     )}
                     <div className={recipe.imageUrls && recipe.imageUrls.length > 0 ? "w-full sm:w-2/3" : "w-full"}>
+                      {recipe.cookingTime && (
+                         <div className="flex items-center text-sm text-muted-foreground mb-4">
+                            <Clock className="h-4 w-4 mr-1.5" />
+                            <span>{recipe.cookingTime}</span>
+                        </div>
+                      )}
                       <h3 className="font-bold font-headline mb-2 text-md">Ingredients</h3>
                       <p className="text-muted-foreground mb-4">{recipe.ingredients}</p>
                       <h3 className="font-bold font-headline mb-2 text-md">Instructions</h3>
@@ -323,6 +333,7 @@ const RecipeSkeleton = () => (
     <CardHeader>
       <Skeleton className="h-8 w-3/4" />
        <Skeleton className="h-4 w-1/2" />
+       <Skeleton className="h-4 w-1/4 mt-2" />
     </CardHeader>
     <CardContent className="space-y-4">
       <Skeleton className="h-40 w-full rounded-md" />
