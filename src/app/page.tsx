@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
@@ -65,7 +65,7 @@ export default function Home() {
     setIngredients(ingredients.filter(i => i !== ingredientToRemove));
   };
 
-  const handleGenerateRecipe = async () => {
+  const handleGenerateRecipe = async (regenerate = false) => {
     if (ingredients.length === 0) {
       toast({
         variant: "destructive",
@@ -76,9 +76,14 @@ export default function Home() {
     }
     setIsLoading(true);
     setError(null);
-    setGeneratedRecipe(null);
+    if (!regenerate) {
+        setGeneratedRecipe(null);
+    }
     try {
-      const result = await generateRecipe({ ingredients: ingredients.join(', ') });
+      const result = await generateRecipe({ 
+        ingredients: ingredients.join(', '),
+        previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
+      });
       setGeneratedRecipe(result);
       if (result.imageUrl.startsWith('https://placehold.co')) {
         toast({
@@ -162,7 +167,7 @@ export default function Home() {
                   </Badge>
                 ))}
               </div>
-              <Button onClick={handleGenerateRecipe} disabled={ingredients.length === 0 || isLoading} className="w-full mt-6 text-lg py-6 bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={() => handleGenerateRecipe()} disabled={ingredients.length === 0 || isLoading} className="w-full mt-6 text-lg py-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Sparkles className="mr-2 h-5 w-5" />
                 {isLoading ? 'Generating...' : 'Generate Recipe'}
               </Button>
@@ -205,10 +210,16 @@ export default function Home() {
                       <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
                     ))}
                   </ol>
-                  <Button onClick={handleSaveRecipe} disabled={isRecipeSaved} className="w-full mt-6">
-                    <Save className="mr-2 h-4 w-4" />
-                    {isRecipeSaved ? 'Recipe Saved' : 'Save Recipe'}
-                  </Button>
+                  <div className="flex gap-2 w-full mt-6">
+                    <Button onClick={() => handleGenerateRecipe(true)} variant="outline" className="w-full" disabled={isLoading}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Generate Another
+                    </Button>
+                    <Button onClick={handleSaveRecipe} disabled={isRecipeSaved || isLoading} className="w-full">
+                      <Save className="mr-2 h-4 w-4" />
+                      {isRecipeSaved ? 'Saved' : 'Save Recipe'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
