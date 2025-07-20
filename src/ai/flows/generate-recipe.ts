@@ -24,7 +24,6 @@ const GenerateRecipeOutputSchema = z.object({
   ingredients: z.string().describe('The ingredients required for the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
   imageUrl: z.string().url().describe('URL of an image of the dish.'),
-  imageBase64: z.string().describe('Base64 encoded image data.'),
 });
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
@@ -69,7 +68,6 @@ const generateRecipeFlow = ai.defineFlow(
     }
 
     let imageUrl = `https://placehold.co/600x400.png`;
-    let imageBase64 = '';
 
     try {
         const {media} = await ai.generate({
@@ -81,24 +79,14 @@ const generateRecipeFlow = ai.defineFlow(
         });
         if (media && media.url) {
             imageUrl = media.url;
-            if (media.url.startsWith('data:')) {
-                imageBase64 = media.url.split(',')[1];
-            }
         }
     } catch (e) {
         console.error("Image generation failed, using placeholder.", e);
-    }
-    
-    if (!imageBase64) {
-        const response = await fetch(imageUrl);
-        const buffer = await response.arrayBuffer();
-        imageBase64 = Buffer.from(buffer).toString('base64');
     }
 
     return {
         ...recipeDetails,
         imageUrl,
-        imageBase64,
     };
   }
 );
