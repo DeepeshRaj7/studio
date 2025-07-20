@@ -27,8 +27,7 @@ const generateVideoFlow = ai.defineFlow(
     inputSchema: GenerateVideoInputSchema,
     outputSchema: GenerateVideoOutputSchema,
   },
-  async ({ title, instructions, imageUrl }) => {
-    const imageB64 = await toBase64(imageUrl);
+  async ({ title, instructions, imageBase64 }) => {
 
     const videoPrompt = `
       Create a short, step-by-step cooking video for a recipe called "${title}".
@@ -36,13 +35,14 @@ const generateVideoFlow = ai.defineFlow(
       ${instructions}
       Use the provided image as a reference for the final dish.
       The video should be fast-paced, engaging, and have clear visuals for each step.
+      Animate the provided image to create the video.
     `;
 
     let { operation } = await ai.generate({
       model: googleAI.model('veo-2.0-generate-001'),
       prompt: [
         { text: videoPrompt },
-        { media: { contentType: 'image/png', url: `data:image/png;base64,${imageB64}` } },
+        { media: { contentType: 'image/png', url: `data:image/png;base64,${imageBase64}` } },
       ],
       config: {
         durationSeconds: 8,
@@ -55,7 +55,6 @@ const generateVideoFlow = ai.defineFlow(
     }
 
     while (!operation.done) {
-      // In a real app, you might want to add a timeout here.
       await new Promise((resolve) => setTimeout(resolve, 5000));
       operation = await ai.checkOperation(operation);
     }

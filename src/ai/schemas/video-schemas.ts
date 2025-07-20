@@ -6,7 +6,7 @@ import { z } from 'genkit';
 export const GenerateVideoInputSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
-  imageUrl: z.string().url().describe('URL of an image of the dish to use as a reference.'),
+  imageBase64: z.string().describe('Base64 encoded image data to use as a reference.'),
 });
 export type GenerateVideoInput = z.infer<typeof GenerateVideoInputSchema>;
 

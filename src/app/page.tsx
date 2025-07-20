@@ -112,14 +112,14 @@ export default function Home() {
   };
 
   const handleGenerateVideo = async () => {
-    if (!generatedRecipe || generatedRecipe.videoUrl) return;
+    if (!generatedRecipe || generatedRecipe.videoUrl || !generatedRecipe.imageBase64) return;
 
     setIsVideoLoading(true);
     try {
       const result = await generateVideo({
         title: generatedRecipe.title,
         instructions: generatedRecipe.instructions,
-        imageUrl: generatedRecipe.imageUrl,
+        imageBase64: generatedRecipe.imageBase64,
       });
       setGeneratedRecipe(prev => prev ? { ...prev, videoUrl: result.videoUrl } : null);
     } catch (e) {
@@ -136,8 +136,8 @@ export default function Home() {
 
   const handleSaveRecipe = () => {
     if (generatedRecipe && !savedRecipes.some(r => r.title === generatedRecipe.title)) {
-      // Don't save the videoUrl to localStorage
-      const { videoUrl, ...recipeToSave } = generatedRecipe;
+      // Don't save the videoUrl or imageBase64 to localStorage
+      const { videoUrl, imageBase64, ...recipeToSave } = generatedRecipe;
       setSavedRecipes([...savedRecipes, recipeToSave]);
       toast({
         title: "Recipe Saved!",
@@ -222,7 +222,7 @@ export default function Home() {
                   }}>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="recipe"><UtensilsCrossed className="mr-2 h-4 w-4" />Recipe</TabsTrigger>
-                      <TabsTrigger value="video"><Video className="mr-2 h-4 w-4" />Video</TabsTrigger>
+                      <TabsTrigger value="video" disabled={!generatedRecipe.imageBase64}><Video className="mr-2 h-4 w-4" />Video</TabsTrigger>
                     </TabsList>
                     <TabsContent value="recipe">
                       <div className="mt-4 mb-4">
