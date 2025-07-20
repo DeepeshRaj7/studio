@@ -205,6 +205,7 @@ export default function Home() {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="font-headline text-2xl">{generatedRecipe.title}</CardTitle>
+                  <CardDescription>"{generatedRecipe.chefCommentary}"</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="mt-4 mb-4">
@@ -321,6 +322,7 @@ const RecipeSkeleton = () => (
   <Card className="shadow-lg">
     <CardHeader>
       <Skeleton className="h-8 w-3/4" />
+       <Skeleton className="h-4 w-1/2" />
     </CardHeader>
     <CardContent className="space-y-4">
       <Skeleton className="h-40 w-full rounded-md" />

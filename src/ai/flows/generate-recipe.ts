@@ -24,6 +24,7 @@ const GenerateRecipeOutputSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
   ingredients: z.string().describe('The ingredients required for the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
+  chefCommentary: z.string().describe('A short, encouraging, and impressive sentence from the chef about the dish.'),
   imageUrls: z.array(z.string().url()).describe('URLs of images of the dish.'),
   imageDataUris: z.array(z.string()).optional().describe('Base64 encoded image data URIs.'),
 });
@@ -40,6 +41,7 @@ const recipePrompt = ai.definePrompt({
     title: z.string().describe('The title of the recipe.'),
     ingredients: z.string().describe('The ingredients required for the recipe, with measurements.'),
     instructions: z.string().describe('The instructions for the recipe.'),
+    chefCommentary: z.string().describe('A short, encouraging, and impressive sentence from the chef about the dish. For example: "You are about to have a wonderful meal!"'),
   })},
   prompt: `You are a world-class chef. Generate a recipe based on the ingredients provided.
 
@@ -53,11 +55,14 @@ const recipePrompt = ai.definePrompt({
   Please generate a different recipe than "{{{previousRecipeTitle}}}".
   {{/if}}
 
+  Also provide a short, single sentence of impressive commentary about the final dish.
+
   Format the response as follows:
 
   Title: [Recipe Title]
   Ingredients: [Comma separated list of ingredients with quantities]
-  Instructions: [Step-by-step instructions]`,
+  Instructions: [Step-by-step instructions]
+  Chef's Commentary: [An impressive sentence about the dish]`,
 });
 
 
