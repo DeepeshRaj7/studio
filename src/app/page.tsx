@@ -16,9 +16,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown, PackagePlus, CookingPot } from 'lucide-react';
 
-const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
+const PANTRY_STORAGE_KEY = 'whatCanICook-pantry';
+const COOKING_LIST_STORAGE_KEY = 'whatCanICook-cookingList';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
 const DIETARY_STORAGE_KEY = 'whatCanICook-dietary';
 const CUISINE_STORAGE_KEY = 'whatCanICook-cuisine';
@@ -27,8 +28,9 @@ const DIETARY_OPTIONS = ["Vegan", "Gluten-Free"];
 const CUISINE_OPTIONS = ["Any", "Italian", "Mexican", "Indian", "Chinese", "Japanese", "Thai", "French", "Greek"];
 
 export default function Home() {
-  const [newIngredient, setNewIngredient] = useState('');
-  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [newPantryItem, setNewPantryItem] = useState('');
+  const [pantryIngredients, setPantryIngredients] = useState<string[]>([]);
+  const [cookingList, setCookingList] = useState<string[]>([]);
   const [servings, setServings] = useState(2);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [cuisine, setCuisine] = useState('Any');
@@ -40,22 +42,21 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const storedIngredients = localStorage.getItem(INGREDIENTS_STORAGE_KEY);
-      if (storedIngredients) {
-        setIngredients(JSON.parse(storedIngredients));
-      }
+      const storedPantry = localStorage.getItem(PANTRY_STORAGE_KEY);
+      if (storedPantry) setPantryIngredients(JSON.parse(storedPantry));
+
+      const storedCookingList = localStorage.getItem(COOKING_LIST_STORAGE_KEY);
+      if (storedCookingList) setCookingList(JSON.parse(storedCookingList));
+      
       const storedRecipes = localStorage.getItem(RECIPES_STORAGE_KEY);
-      if (storedRecipes) {
-        setSavedRecipes(JSON.parse(storedRecipes));
-      }
+      if (storedRecipes) setSavedRecipes(JSON.parse(storedRecipes));
+      
       const storedDietary = localStorage.getItem(DIETARY_STORAGE_KEY);
-      if (storedDietary) {
-        setDietaryRestrictions(JSON.parse(storedDietary));
-      }
-       const storedCuisine = localStorage.getItem(CUISINE_STORAGE_KEY);
-      if (storedCuisine) {
-        setCuisine(JSON.parse(storedCuisine));
-      }
+      if (storedDietary) setDietaryRestrictions(JSON.parse(storedDietary));
+      
+      const storedCuisine = localStorage.getItem(CUISINE_STORAGE_KEY);
+      if (storedCuisine) setCuisine(JSON.parse(storedCuisine));
+
     } catch (e) {
       console.error("Failed to parse from localStorage", e);
       toast({
@@ -66,32 +67,33 @@ export default function Home() {
     }
   }, [toast]);
 
-  useEffect(() => {
-    localStorage.setItem(INGREDIENTS_STORAGE_KEY, JSON.stringify(ingredients));
-  }, [ingredients]);
-  
-  useEffect(() => {
-    localStorage.setItem(DIETARY_STORAGE_KEY, JSON.stringify(dietaryRestrictions));
-  }, [dietaryRestrictions]);
+  useEffect(() => { localStorage.setItem(PANTRY_STORAGE_KEY, JSON.stringify(pantryIngredients)); }, [pantryIngredients]);
+  useEffect(() => { localStorage.setItem(COOKING_LIST_STORAGE_KEY, JSON.stringify(cookingList)); }, [cookingList]);
+  useEffect(() => { localStorage.setItem(DIETARY_STORAGE_KEY, JSON.stringify(dietaryRestrictions)); }, [dietaryRestrictions]);
+  useEffect(() => { localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes)); }, [savedRecipes]);
+  useEffect(() => { localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisine)); }, [cuisine]);
 
-  useEffect(() => {
-    localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes));
-  }, [savedRecipes]);
-
-  useEffect(() => {
-    localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisine));
-  }, [cuisine]);
-
-  const handleAddIngredient = (e: FormEvent) => {
+  const handleAddPantryItem = (e: FormEvent) => {
     e.preventDefault();
-    if (newIngredient && !ingredients.includes(newIngredient.trim())) {
-      setIngredients([...ingredients, newIngredient.trim()]);
-      setNewIngredient('');
+    if (newPantryItem && !pantryIngredients.includes(newPantryItem.trim())) {
+      setPantryIngredients([...pantryIngredients, newPantryItem.trim()]);
+      setNewPantryItem('');
     }
   };
 
-  const handleRemoveIngredient = (ingredientToRemove: string) => {
-    setIngredients(ingredients.filter(i => i !== ingredientToRemove));
+  const handleRemovePantryItem = (ingredientToRemove: string) => {
+    setPantryIngredients(pantryIngredients.filter(i => i !== ingredientToRemove));
+    setCookingList(cookingList.filter(i => i !== ingredientToRemove)); // Also remove from cooking list
+  };
+
+  const handleAddToCookingList = (ingredient: string) => {
+    if (!cookingList.includes(ingredient)) {
+      setCookingList([...cookingList, ingredient]);
+    }
+  };
+
+  const handleRemoveFromCookingList = (ingredient: string) => {
+    setCookingList(cookingList.filter(i => i !== ingredient));
   };
   
   const handleDietaryChange = (option: string) => {
@@ -101,11 +103,11 @@ export default function Home() {
   };
 
   const handleGenerateRecipe = async (regenerate = false) => {
-    if (ingredients.length === 0) {
+    if (cookingList.length === 0) {
       toast({
         variant: "destructive",
-        title: "No Ingredients",
-        description: "Please add some ingredients before generating a recipe.",
+        title: "Empty Cooking List",
+        description: "Please add some ingredients from your pantry to the cooking list first.",
       });
       return;
     }
@@ -116,7 +118,7 @@ export default function Home() {
     }
     try {
       const result = await generateRecipe({ 
-        ingredients: ingredients.join(', '),
+        ingredients: cookingList.join(', '),
         servings: servings,
         previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
         dietaryRestrictions: dietaryRestrictions,
@@ -181,32 +183,66 @@ export default function Home() {
                 <ChefHat className="h-6 w-6 text-primary" />
                 Your Kitchen
               </CardTitle>
-              <CardDescription>Add what you have, set your preferences, and let's get cooking.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddIngredient} className="flex gap-2 mb-4">
-                <Input
-                  type="text"
-                  value={newIngredient}
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  placeholder="e.g., Chicken, Tomatoes, Rice"
-                  className="flex-grow"
-                />
-                <Button type="submit" size="icon" aria-label="Add Ingredient">
-                  <PlusCircle />
-                </Button>
-              </form>
-              <div className="flex flex-wrap gap-2 mb-4 min-h-[40px]">
-                {ingredients.map(ingredient => (
-                  <Badge key={ingredient} variant="secondary" className="text-lg py-1 px-3">
-                    {ingredient}
-                    <button onClick={() => handleRemoveIngredient(ingredient)} className="ml-2 rounded-full hover:bg-muted-foreground/20 p-0.5">
-                      <X className="h-4 w-4" />
-                    </button>
-                  </Badge>
-                ))}
+              {/* PANTRY MANAGEMENT */}
+              <div className="mb-6">
+                <Label className="flex items-center gap-2 mb-2 font-headline text-md">
+                   <PackagePlus className="h-5 w-5" />
+                   My Pantry
+                </Label>
+                <form onSubmit={handleAddPantryItem} className="flex gap-2 mb-4">
+                  <Input
+                    type="text"
+                    value={newPantryItem}
+                    onChange={(e) => setNewPantryItem(e.target.value)}
+                    placeholder="e.g., Chicken, Tomatoes, Rice"
+                    className="flex-grow"
+                  />
+                  <Button type="submit" size="icon" aria-label="Add to Pantry">
+                    <PlusCircle />
+                  </Button>
+                </form>
+                <div className="flex flex-wrap gap-2 min-h-[40px] bg-muted/50 p-2 rounded-md">
+                  {pantryIngredients.length === 0 ? (
+                     <span className="text-sm text-muted-foreground p-2">Your pantry is empty. Add some items!</span>
+                  ) : pantryIngredients.map(ingredient => (
+                    <Badge key={ingredient} variant="secondary" className="text-lg py-1 px-3">
+                      {ingredient}
+                      <button onClick={() => handleAddToCookingList(ingredient)} className="ml-2 rounded-full hover:bg-green-500/20 p-0.5" aria-label={`Add ${ingredient} to cooking list`}>
+                        <PlusCircle className="h-4 w-4 text-green-600" />
+                      </button>
+                      <button onClick={() => handleRemovePantryItem(ingredient)} className="ml-1 rounded-full hover:bg-red-500/20 p-0.5" aria-label={`Remove ${ingredient} from pantry`}>
+                        <X className="h-4 w-4 text-red-600" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
+              {/* COOKING LIST */}
+              <div className="mb-6">
+                <Label className="flex items-center gap-2 mb-2 font-headline text-md">
+                   <CookingPot className="h-5 w-5" />
+                   What's for Dinner?
+                </Label>
+                 <div className="flex flex-wrap gap-2 min-h-[40px] bg-primary/10 p-2 rounded-md">
+                   {cookingList.length === 0 ? (
+                     <span className="text-sm text-muted-foreground p-2">Click the green plus on pantry items to add them here.</span>
+                   ) : cookingList.map(ingredient => (
+                      <Badge key={ingredient} variant="default" className="text-lg py-1 px-3">
+                        {ingredient}
+                        <button onClick={() => handleRemoveFromCookingList(ingredient)} className="ml-2 rounded-full hover:bg-background/20 p-0.5">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </Badge>
+                    ))}
+                 </div>
+              </div>
+
+              <Separator className="my-6"/>
+
+              {/* PREFERENCES */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                    <Label className="flex items-center gap-2 mb-2 font-headline text-md">
@@ -264,7 +300,7 @@ export default function Home() {
                 />
               </div>
 
-              <Button onClick={() => handleGenerateRecipe()} disabled={ingredients.length === 0 || isLoading} className="w-full mt-6 text-lg py-6 bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={() => handleGenerateRecipe()} disabled={cookingList.length === 0 || isLoading} className="w-full mt-6 text-lg py-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Sparkles className="mr-2 h-5 w-5" />
                 {isLoading ? 'Generating...' : 'Generate Recipe'}
               </Button>
@@ -440,7 +476,7 @@ const PlaceholderCard = () => (
         <CardTitle className="font-headline text-2xl">Ready to Cook?</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground">Your next delicious meal is just a click away. <br/> Add your ingredients and hit "Generate Recipe" to start.</p>
+        <p className="text-muted-foreground">Your next delicious meal is just a click away. <br/> Add items to your cooking list and hit "Generate Recipe" to start.</p>
       </CardContent>
     </Card>
 );
