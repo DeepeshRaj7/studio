@@ -81,9 +81,9 @@ const generateRecipeFlow = ai.defineFlow(
     const imageUrls: string[] = [];
     
     const imagePrompts = [
-        `A photorealistic image of a dish called "${recipeDetails.title}". The main ingredients are ${recipeDetails.ingredients}. The dish should be professionally plated. A person is seen in the background with a happy reaction to the food.`,
-        `Another angle of the dish "${recipeDetails.title}" with ingredients ${recipeDetails.ingredients}. Someone is taking a bite and looking delighted.`,
-        `A close-up shot of the finished dish "${recipeDetails.title}" being served. There's a blurred background of people enjoying a meal.`
+        `A cute, simple, and neat photorealistic image of a dish called "${recipeDetails.title}". The main ingredients are ${recipeDetails.ingredients}. The dish should be professionally plated on a clean, modern background.`,
+        `Another angle of the dish "${recipeDetails.title}" with ingredients ${recipeDetails.ingredients}. This is a simple and cute photo with a shallow depth of field, making the food look very appealing.`,
+        `A top-down, flat-lay photograph of the finished dish "${recipeDetails.title}". The plating is neat and artistic. The style is cute and minimalist.`
     ];
 
     try {

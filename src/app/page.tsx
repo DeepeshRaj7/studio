@@ -220,7 +220,7 @@ export default function Home() {
                                 width={600}
                                 height={400}
                                 className="w-full h-auto rounded-md object-cover"
-                                data-ai-hint="recipe food people"
+                                data-ai-hint="recipe food"
                               />
                            </CarouselItem>
                         ))}
@@ -287,7 +287,7 @@ export default function Home() {
                                             width={300}
                                             height={200}
                                             className="w-full h-auto rounded-md object-cover"
-                                            data-ai-hint="recipe food people"
+                                            data-ai-hint="recipe food"
                                         />
                                     </CarouselItem>
                                 ))}
