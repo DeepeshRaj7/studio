@@ -7,6 +7,7 @@ import type { GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -86,10 +87,10 @@ export default function Home() {
         previousRecipeTitle: regenerate && generatedRecipe ? generatedRecipe.title : undefined,
       });
       setGeneratedRecipe(result);
-      if (result.imageUrl.startsWith('https://placehold.co')) {
+      if (result.imageUrls.some(url => url.startsWith('https://placehold.co'))) {
         toast({
-            title: "Image Generation Skipped",
-            description: "Could not generate a custom image, but here is your recipe!",
+            title: "Image Generation Partial Fail",
+            description: "Could not generate all images, but here is your recipe!",
           });
       }
     } catch (e) {
@@ -187,15 +188,25 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <div className="mt-4 mb-4">
-                  {generatedRecipe.imageUrl ? (
-                      <Image 
-                        src={generatedRecipe.imageUrl}
-                        alt={generatedRecipe.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-auto rounded-md object-cover"
-                        data-ai-hint="recipe food"
-                      />
+                  {generatedRecipe.imageUrls && generatedRecipe.imageUrls.length > 0 ? (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {generatedRecipe.imageUrls.map((url, index) => (
+                           <CarouselItem key={index}>
+                              <Image 
+                                src={url}
+                                alt={`${generatedRecipe.title} - image ${index + 1}`}
+                                width={600}
+                                height={400}
+                                className="w-full h-auto rounded-md object-cover"
+                                data-ai-hint="recipe food people"
+                              />
+                           </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious />
+                      <CarouselNext />
+                    </Carousel>
                   ) : (
                     <div className="w-full aspect-[3/2] bg-muted rounded-md flex flex-col items-center justify-center">
                         <ImageIcon className="h-12 w-12 text-muted-foreground" />
@@ -242,20 +253,30 @@ export default function Home() {
                       </Button>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="p-4 flex gap-4">
-                    {recipe.imageUrl && (
-                         <div className="w-1/3">
-                            <Image 
-                                src={recipe.imageUrl}
-                                alt={recipe.title}
-                                width={300}
-                                height={200}
-                                className="w-full h-auto rounded-md object-cover"
-                                data-ai-hint="recipe food"
-                            />
+                  <AccordionContent className="p-4 flex flex-col sm:flex-row gap-4">
+                    {recipe.imageUrls && recipe.imageUrls.length > 0 && (
+                         <div className="w-full sm:w-1/3">
+                            <Carousel className="w-full">
+                               <CarouselContent>
+                                {recipe.imageUrls.map((url, index) => (
+                                    <CarouselItem key={index}>
+                                        <Image 
+                                            src={url}
+                                            alt={`${recipe.title} - image ${index + 1}`}
+                                            width={300}
+                                            height={200}
+                                            className="w-full h-auto rounded-md object-cover"
+                                            data-ai-hint="recipe food people"
+                                        />
+                                    </CarouselItem>
+                                ))}
+                               </CarouselContent>
+                               <CarouselPrevious />
+                               <CarouselNext />
+                            </Carousel>
                         </div>
                     )}
-                    <div className={recipe.imageUrl ? "w-2/3" : "w-full"}>
+                    <div className={recipe.imageUrls && recipe.imageUrls.length > 0 ? "w-full sm:w-2/3" : "w-full"}>
                       <h3 className="font-bold font-headline mb-2 text-md">Ingredients</h3>
                       <p className="text-muted-foreground mb-4">{recipe.ingredients}</p>
                       <h3 className="font-bold font-headline mb-2 text-md">Instructions</h3>

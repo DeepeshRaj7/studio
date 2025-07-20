@@ -23,7 +23,8 @@ const GenerateRecipeOutputSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
   ingredients: z.string().describe('The ingredients required for the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
-  imageUrl: z.string().url().describe('URL of an image of the dish.'),
+  imageUrls: z.array(z.string().url()).describe('URLs of images of the dish.'),
+  imageDataUris: z.array(z.string()).optional().describe('Base64 encoded image data URIs.'),
 });
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
@@ -67,26 +68,53 @@ const generateRecipeFlow = ai.defineFlow(
         throw new Error('Failed to generate recipe details.');
     }
 
-    let imageUrl = `https://placehold.co/600x400.png`;
+    const imageUrls: string[] = [];
+    
+    const imagePrompts = [
+        `A photorealistic image of a dish called "${recipeDetails.title}". The main ingredients are ${recipeDetails.ingredients}. The dish should be professionally plated. A person is seen in the background with a happy reaction to the food.`,
+        `Another angle of the dish "${recipeDetails.title}" with ingredients ${recipeDetails.ingredients}. Someone is taking a bite and looking delighted.`,
+        `A close-up shot of the finished dish "${recipeDetails.title}" being served. There's a blurred background of people enjoying a meal.`
+    ];
 
     try {
-        const {media} = await ai.generate({
-          model: 'googleai/gemini-2.0-flash-preview-image-generation',
-          prompt: `A photorealistic image of a dish called "${recipeDetails.title}". The main ingredients are ${recipeDetails.ingredients}. The dish should be professionally plated. Only show the specified ingredients.`,
-          config: {
-            responseModalities: ['IMAGE', 'TEXT'],
-          },
+        const imagePromises = imagePrompts.map(prompt => 
+            ai.generate({
+                model: 'googleai/gemini-2.0-flash-preview-image-generation',
+                prompt: prompt,
+                config: {
+                    responseModalities: ['IMAGE', 'TEXT'],
+                },
+            })
+        );
+        
+        const results = await Promise.allSettled(imagePromises);
+
+        results.forEach(result => {
+            if (result.status === 'fulfilled' && result.value.media && result.value.media.url) {
+                imageUrls.push(result.value.media.url);
+            } else {
+                console.error("Image generation failed for one prompt, using placeholder.", result.status === 'rejected' ? result.reason : 'No media url');
+                imageUrls.push(`https://placehold.co/600x400.png`);
+            }
         });
-        if (media && media.url) {
-            imageUrl = media.url;
-        }
+
     } catch (e) {
-        console.error("Image generation failed, using placeholder.", e);
+        console.error("Image generation failed, using placeholders.", e);
+        // Fill with placeholders if the whole process fails
+        while (imageUrls.length < 3) {
+            imageUrls.push(`https://placehold.co/600x400.png`);
+        }
+    }
+    
+    // Ensure there are always 3 images, even if some failed.
+    while (imageUrls.length < 3) {
+        imageUrls.push(`https://placehold.co/600x400.png`);
     }
 
     return {
         ...recipeDetails,
-        imageUrl,
+        imageUrls: imageUrls,
+        imageDataUris: imageUrls, // Sending back data uris
     };
   }
 );
