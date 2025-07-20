@@ -23,6 +23,7 @@ const GenerateRecipeOutputSchema = z.object({
   title: z.string().describe('The title of the recipe.'),
   ingredients: z.string().describe('The ingredients required for the recipe.'),
   instructions: z.string().describe('The instructions for the recipe.'),
+  imageUrl: z.string().url().describe('URL of an image of the dish.'),
 });
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
@@ -30,10 +31,14 @@ export async function generateRecipe(input: GenerateRecipeInput): Promise<Genera
   return generateRecipeFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const recipePrompt = ai.definePrompt({
   name: 'generateRecipePrompt',
   input: {schema: GenerateRecipeInputSchema},
-  output: {schema: GenerateRecipeOutputSchema},
+  output: {schema: z.object({
+    title: z.string().describe('The title of the recipe.'),
+    ingredients: z.string().describe('The ingredients required for the recipe.'),
+    instructions: z.string().describe('The instructions for the recipe.'),
+  })},
   prompt: `You are a world-class chef. Generate a recipe based on the ingredients provided.
 
   Ingredients: {{{ingredients}}}
@@ -45,6 +50,7 @@ const prompt = ai.definePrompt({
   Instructions: [Step-by-step instructions]`,
 });
 
+
 const generateRecipeFlow = ai.defineFlow(
   {
     name: 'generateRecipeFlow',
@@ -52,7 +58,24 @@ const generateRecipeFlow = ai.defineFlow(
     outputSchema: GenerateRecipeOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const {output: recipeDetails} = await recipePrompt(input);
+    if (!recipeDetails) {
+        throw new Error('Failed to generate recipe details.');
+    }
+
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: `A photorealistic image of ${recipeDetails.title}, professionally plated.`,
+      config: {
+        responseModalities: ['IMAGE'],
+      },
+    });
+
+    const imageUrl = media.url || `https://placehold.co/600x400.png?text=${encodeURIComponent(recipeDetails.title)}`;
+
+    return {
+        ...recipeDetails,
+        imageUrl: imageUrl,
+    };
   }
 );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
+import Image from 'next/image';
 import { generateRecipe, GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
@@ -173,6 +174,23 @@ export default function Home() {
                   <CardTitle className="font-headline text-2xl">{generatedRecipe.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <div className="mb-4">
+                  {generatedRecipe.imageUrl ? (
+                      <Image 
+                        src={generatedRecipe.imageUrl}
+                        alt={generatedRecipe.title}
+                        width={600}
+                        height={400}
+                        className="w-full h-auto rounded-md object-cover"
+                        data-ai-hint="recipe food"
+                      />
+                  ) : (
+                    <div className="w-full aspect-[3/2] bg-muted rounded-md flex flex-col items-center justify-center">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                        <p className="text-muted-foreground mt-2">No image available</p>
+                    </div>
+                  )}
+                  </div>
                   <h3 className="font-bold font-headline mb-2 text-lg">Ingredients</h3>
                   <p className="text-muted-foreground mb-4">{generatedRecipe.ingredients}</p>
                   <h3 className="font-bold font-headline mb-2 text-lg">Instructions</h3>
@@ -206,15 +224,29 @@ export default function Home() {
                       </Button>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="p-4">
-                    <h3 className="font-bold font-headline mb-2 text-md">Ingredients</h3>
-                    <p className="text-muted-foreground mb-4">{recipe.ingredients}</p>
-                    <h3 className="font-bold font-headline mb-2 text-md">Instructions</h3>
-                    <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                       {recipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
-                         <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
-                       ))}
-                    </ol>
+                  <AccordionContent className="p-4 flex gap-4">
+                    {recipe.imageUrl && (
+                         <div className="w-1/3">
+                            <Image 
+                                src={recipe.imageUrl}
+                                alt={recipe.title}
+                                width={300}
+                                height={200}
+                                className="w-full h-auto rounded-md object-cover"
+                                data-ai-hint="recipe food"
+                            />
+                        </div>
+                    )}
+                    <div className={recipe.imageUrl ? "w-2/3" : "w-full"}>
+                      <h3 className="font-bold font-headline mb-2 text-md">Ingredients</h3>
+                      <p className="text-muted-foreground mb-4">{recipe.ingredients}</p>
+                      <h3 className="font-bold font-headline mb-2 text-md">Instructions</h3>
+                      <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                         {recipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
+                           <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
+                         ))}
+                      </ol>
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -232,6 +264,7 @@ const RecipeSkeleton = () => (
       <Skeleton className="h-8 w-3/4" />
     </CardHeader>
     <CardContent className="space-y-4">
+      <Skeleton className="h-40 w-full rounded-md" />
       <Skeleton className="h-6 w-1/4" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
