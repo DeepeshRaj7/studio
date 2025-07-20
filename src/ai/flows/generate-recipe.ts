@@ -68,7 +68,7 @@ const generateRecipeFlow = ai.defineFlow(
     try {
         const {media} = await ai.generate({
           model: 'googleai/gemini-2.0-flash-preview-image-generation',
-          prompt: `A photorealistic image of ${recipeDetails.title}, professionally plated.`,
+          prompt: `A photorealistic image of a dish called "${recipeDetails.title}". The main ingredients are ${recipeDetails.ingredients}. The dish should be professionally plated. Only show the specified ingredients.`,
           config: {
             responseModalities: ['IMAGE', 'TEXT'],
           },
