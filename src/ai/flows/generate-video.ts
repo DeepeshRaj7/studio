@@ -4,33 +4,18 @@
  * @fileOverview Video generation flow for recipes.
  *
  * - generateVideo - A function that generates a video for a recipe.
- * - GenerateVideoInput - The input type for the generateVideo function.
- * - GenerateVideoOutput - The return type for the generateVideo function.
  */
 
 import { ai } from '@/ai/genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { z } from 'genkit';
 import { MediaPart } from 'genkit/model';
-
-export const GenerateVideoInputSchema = z.object({
-  title: z.string().describe('The title of the recipe.'),
-  instructions: z.string().describe('The instructions for the recipe.'),
-  imageUrl: z.string().url().describe('URL of an image of the dish to use as a reference.'),
-});
-export type GenerateVideoInput = z.infer<typeof GenerateVideoInputSchema>;
-
-export const GenerateVideoOutputSchema = z.object({
-  videoUrl: z.string().url().describe('The data URI of the generated video.'),
-});
-export type GenerateVideoOutput = z.infer<typeof GenerateVideoOutputSchema>;
-
+import { GenerateVideoInput, GenerateVideoInputSchema, GenerateVideoOutputSchema } from '@/ai/schemas/video-schemas';
 
 async function toBase64(url: string): Promise<string> {
     const fetch = (await import('node-fetch')).default;
     const response = await fetch(url);
-    const buffer = await response.buffer();
-    return buffer.toString('base64');
+    const buffer = await response.arrayBuffer();
+    return Buffer.from(buffer).toString('base64');
 }
 
 const generateVideoFlow = ai.defineFlow(
@@ -81,8 +66,14 @@ const generateVideoFlow = ai.defineFlow(
     if (!video || !video.media?.url) {
       throw new Error('Failed to find the generated video');
     }
-
-    const videoBase64 = await toBase64(`${video.media.url}&key=${process.env.GEMINI_API_KEY}`);
+    
+    let videoBase64: string;
+    // The key might not be needed for all environments, so we add a check.
+    if (process.env.GEMINI_API_KEY) {
+        videoBase64 = await toBase64(`${video.media.url}&key=${process.env.GEMINI_API_KEY}`);
+    } else {
+        videoBase64 = await toBase64(video.media.url);
+    }
     
     return {
       videoUrl: `data:video/mp4;base64,${videoBase64}`,
@@ -90,6 +81,6 @@ const generateVideoFlow = ai.defineFlow(
   }
 );
 
-export async function generateVideo(input: GenerateVideoInput): Promise<GenerateVideoOutput> {
+export async function generateVideo(input: GenerateVideoInput) {
   return generateVideoFlow(input);
 }

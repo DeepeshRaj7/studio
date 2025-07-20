@@ -2,8 +2,10 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
-import { generateRecipe, GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
-import { generateVideo, GenerateVideoOutput } from '@/ai/flows/generate-video';
+import { generateRecipe } from '@/ai/flows/generate-recipe';
+import type { GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
+import { generateVideo } from '@/ai/flows/generate-video';
+import type { GenerateVideoInput, GenerateVideoOutput } from '@/ai/schemas/video-schemas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
