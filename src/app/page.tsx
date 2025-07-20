@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const INGREDIENTS_STORAGE_KEY = 'whatCanICook-ingredients';
 const RECIPES_STORAGE_KEY = 'whatCanICook-savedRecipes';
@@ -325,11 +325,21 @@ export default function Home() {
                   <div className="flex gap-2 w-full mt-6">
                     <Button onClick={() => handleGenerateRecipe(true)} variant="outline" className="w-full" disabled={isLoading}>
                       <RefreshCw className="mr-2 h-4 w-4" />
-                      Generate Another
+                      Try Again
                     </Button>
                     <Button onClick={handleSaveRecipe} disabled={isRecipeSaved || isLoading} className="w-full">
                       <Save className="mr-2 h-4 w-4" />
                       {isRecipeSaved ? 'Saved' : 'Save Recipe'}
+                    </Button>
+                  </div>
+                  <Separator className="my-4" />
+                   <div className="flex gap-2 w-full">
+                    <p className="text-sm text-muted-foreground self-center">Did you like this recipe?</p>
+                    <Button onClick={handleSaveRecipe} variant="outline" size="icon" disabled={isRecipeSaved || isLoading} aria-label="Like and Save Recipe">
+                      <ThumbsUp className="h-5 w-5 text-green-600"/>
+                    </Button>
+                     <Button onClick={() => handleGenerateRecipe(true)} variant="outline" size="icon" disabled={isLoading} aria-label="Dislike and generate another">
+                      <ThumbsDown className="h-5 w-5 text-red-600"/>
                     </Button>
                   </div>
                 </CardContent>
