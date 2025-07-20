@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useMemo } from 'react';
 import Image from 'next/image';
 import { generateRecipe } from '@/ai/flows/generate-recipe';
 import type { GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown, PackagePlus, CookingPot } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown, PackagePlus, CookingPot, Minus, Plus } from 'lucide-react';
 
 const PANTRY_STORAGE_KEY = 'whatCanICook-pantry';
 const COOKING_LIST_STORAGE_KEY = 'whatCanICook-cookingList';
@@ -26,6 +26,44 @@ const CUISINE_STORAGE_KEY = 'whatCanICook-cuisine';
 
 const DIETARY_OPTIONS = ["Vegan", "Gluten-Free"];
 const CUISINE_OPTIONS = ["Any", "Italian", "Mexican", "Indian", "Chinese", "Japanese", "Thai", "French", "Greek"];
+
+// Function to parse and scale ingredients
+const scaleIngredients = (originalIngredients: string, originalServings: number, newServings: number): string => {
+    if (originalServings === newServings) {
+        return originalIngredients;
+    }
+    const scaleFactor = newServings / originalServings;
+    
+    return originalIngredients.split(',').map(part => {
+        // Regex to find numbers, fractions (e.g., 1/2), or ranges (e.g., 1-2)
+        return part.replace(/(\d+\s*\/\s*\d+)|(\d+\.\d+)|(\d+-\d+)|(\d+)/g, (match) => {
+            // Handle ranges: scale both numbers
+            if (match.includes('-')) {
+                return match.split('-').map(n => (parseFloat(n) * scaleFactor).toFixed(1).replace('.0', '')).join('-');
+            }
+            // Handle fractions
+            if (match.includes('/')) {
+                const [numerator, denominator] = match.split('/').map(Number);
+                const value = numerator / denominator;
+                const scaledValue = value * scaleFactor;
+                // Poor man's fraction conversion for common cases
+                if (Math.abs(scaledValue - 0.25) < 0.01) return '1/4';
+                if (Math.abs(scaledValue - 0.5) < 0.01) return '1/2';
+                if (Math.abs(scaledValue - 0.75) < 0.01) return '3/4';
+                return scaledValue.toFixed(2);
+            }
+            const scaled = (parseFloat(match) * scaleFactor);
+
+            // If the scaled number is very small, show more precision
+            if (scaled > 0 && scaled < 1) {
+                return scaled.toFixed(2);
+            }
+            // Otherwise, round to 1 decimal place and remove .0 if it's a whole number
+            return scaled.toFixed(1).replace('.0', '');
+        });
+    }).join(',');
+};
+
 
 export default function Home() {
   const [newPantryItem, setNewPantryItem] = useState('');
@@ -38,6 +76,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<GenerateRecipeOutput[]>([]);
+  const [scaledServings, setScaledServings] = useState(servings);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,6 +111,17 @@ export default function Home() {
   useEffect(() => { localStorage.setItem(DIETARY_STORAGE_KEY, JSON.stringify(dietaryRestrictions)); }, [dietaryRestrictions]);
   useEffect(() => { localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes)); }, [savedRecipes]);
   useEffect(() => { localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisine)); }, [cuisine]);
+
+  useEffect(() => {
+    if (generatedRecipe) {
+        setScaledServings(servings);
+    }
+  }, [generatedRecipe, servings]);
+
+  const scaledIngredients = useMemo(() => {
+    if (!generatedRecipe) return '';
+    return scaleIngredients(generatedRecipe.ingredients, servings, scaledServings);
+  }, [generatedRecipe, servings, scaledServings]);
 
   const handleAddPantryItem = (e: FormEvent) => {
     e.preventDefault();
@@ -350,8 +400,22 @@ export default function Home() {
                     </div>
                   )}
                   </div>
-                  <h3 className="font-bold font-headline mb-2 text-lg">Ingredients</h3>
-                  <p className="text-muted-foreground mb-4">{generatedRecipe.ingredients}</p>
+
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold font-headline text-lg">Ingredients</h3>
+                    <div className="flex items-center gap-2">
+                       <span className="text-muted-foreground text-sm">Servings:</span>
+                       <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => setScaledServings(s => Math.max(1, s - 1))} disabled={scaledServings <= 1}>
+                         <Minus className="h-4 w-4" />
+                       </Button>
+                       <span className="font-bold text-lg w-8 text-center">{scaledServings}</span>
+                       <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => setScaledServings(s => s + 1)}>
+                         <Plus className="h-4 w-4" />
+                       </Button>
+                    </div>
+                  </div>
+                  <p className="text-muted-foreground mb-4">{scaledIngredients}</p>
+
                   <h3 className="font-bold font-headline mb-2 text-lg">Instructions</h3>
                   <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
                     {generatedRecipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
