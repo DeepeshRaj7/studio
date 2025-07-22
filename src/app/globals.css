@@ -6,6 +6,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: hsl(var(--background));
   background-image:
+    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='10' y='30' font-family='Arial' font-size='24' fill='rgba(255,165,0,0.3)'%3E🍕%3C/text%3E%3Ctext x='70' y='30' font-family='Arial' font-size='24' fill='rgba(255,105,180,0.3)'%3E🍩%3C/text%3E%3Ctext x='40' y='80' font-family='Arial' font-size='24' fill='rgba(135,206,250,0.3)'%3E🍦%3C/text%3E%3Ctext x='90' y='110' font-family='Arial' font-size='24' fill='rgba(255,99,71,0.3)'%3E🍔%3C/text%3E%3C/svg%3E"),
     radial-gradient(circle at 60% 80%, hsl(var(--accent)) 2px, transparent 2.5px),
     radial-gradient(circle at 20% 30%, hsl(var(--primary)) 2px, transparent 2.5px),
     radial-gradient(circle at 80% 20%, hsl(210, 80%, 60%) 1.5px, transparent
@@ -17,25 +18,25 @@ body {
 
 @layer base {
   :root {
-    --background: 45 80% 96%;
-    --foreground: 30 30% 25%;
-    --card: 45 80% 98%;
-    --card-foreground: 30 30% 25%;
-    --popover: 45 80% 98%;
-    --popover-foreground: 30 30% 25%;
-    --primary: 210 80% 60%;
+    --background: 200 80% 96%;
+    --foreground: 220 10% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 20%;
+    --primary: 210 90% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 90%;
-    --secondary-foreground: 210 40% 30%;
-    --muted: 210 40% 95%;
-    --muted-foreground: 210 25% 60%;
-    --accent: 30 90% 60%;
+    --secondary: 30 90% 95%;
+    --secondary-foreground: 30 50% 30%;
+    --muted: 30 90% 95%;
+    --muted-foreground: 30 25% 60%;
+    --accent: 30 100% 60%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 210 60% 85%;
     --input: 210 60% 90%;
-    --ring: 210 80% 60%;
+    --ring: 210 90% 55%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
