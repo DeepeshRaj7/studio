@@ -1,10 +1,19 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import InstallPWAButton from '../components/InstallPWAButton';
 
 export const metadata: Metadata = {
   title: 'What Can I Cook',
   description: 'Generate recipes from ingredients you have.',
+  manifest: "/manifest.json", // Link to your manifest file
+  appleWebApp: { // Optional: for iOS specific PWA behavior
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'My Next.js PWA',
+    // startupImage: ['/path/to/apple_splash_screen.png'],
+  },
+  themeColor: '#000000', // Matches background_color or theme_color in manifest
 };
 
 export default function RootLayout({
@@ -24,6 +33,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         {children}
         <Toaster />
+        <InstallPWAButton /> {/* Add your button here */}
       </body>
     </html>
   );
