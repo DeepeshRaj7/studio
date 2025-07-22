@@ -57,8 +57,9 @@ export default function SavedRecipesPage() {
       <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         <header className="flex justify-between items-center mb-10">
             <div className="flex items-center gap-4">
-                <UtensilsCrossed className="h-10 w-10 text-primary" />
+                <span className="text-4xl">🍕</span>
                 <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Saved Recipes</h1>
+                <span className="text-4xl">🍔</span>
             </div>
             <Link href="/" passHref>
                 <Button variant="outline">

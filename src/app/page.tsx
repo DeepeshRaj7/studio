@@ -233,8 +233,9 @@ export default function Home() {
         <header className="flex justify-between items-center mb-10">
           <div className="flex-1">
             <div className="flex justify-center lg:justify-start items-center gap-4 mb-2">
-              <UtensilsCrossed className="h-10 w-10 text-primary" />
+              <span className="text-4xl">🍕</span>
               <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Fridge Feast</h1>
+              <span className="text-4xl">🍔</span>
             </div>
             <p className="text-lg text-muted-foreground text-center lg:text-left">Your personal chef for ingredients on hand.</p>
           </div>
