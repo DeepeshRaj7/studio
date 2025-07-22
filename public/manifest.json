@@ -1,11 +1,11 @@
 {
   "name": "Fridge Feast",
   "short_name": "FridgeFeast",
-  "description": "Your personal chef for ingredients on hand.",
+  "description": "Generate recipes from ingredients you have on hand.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#6ABF45",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
