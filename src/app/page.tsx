@@ -120,6 +120,8 @@ export default function Home() {
 
   const scaledIngredients = useMemo(() => {
     if (!generatedRecipe) return '';
+    // Assuming the original recipe was for the `servings` state when it was generated
+    // And we are scaling it to `scaledServings`
     return scaleIngredients(generatedRecipe.ingredients, servings, scaledServings);
   }, [generatedRecipe, servings, scaledServings]);
 
