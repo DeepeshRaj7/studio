@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent, useMemo } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { generateRecipe } from '@/ai/flows/generate-recipe';
 import type { GenerateRecipeOutput } from '@/ai/flows/generate-recipe';
 import { Button } from '@/components/ui/button';
@@ -11,12 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, Trash2, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown, PackagePlus, CookingPot, Minus, Plus } from 'lucide-react';
+import { UtensilsCrossed, PlusCircle, X, Sparkles, Save, ChefHat, AlertCircle, Image as ImageIcon, RefreshCw, Users, Clock, Leaf, Globe, ThumbsUp, ThumbsDown, PackagePlus, CookingPot, Minus, Plus, Bookmark } from 'lucide-react';
 
 const PANTRY_STORAGE_KEY = 'whatCanICook-pantry';
 const COOKING_LIST_STORAGE_KEY = 'whatCanICook-cookingList';
@@ -131,8 +131,6 @@ export default function Home() {
 
   const scaledIngredients = useMemo(() => {
     if (!generatedRecipe) return '';
-    // Assuming the original recipe was for the `servings` state when it was generated
-    // And we are scaling it to `scaledServings`
     return scaleIngredients(generatedRecipe.ingredients, servings, scaledServings);
   }, [generatedRecipe, servings, scaledServings]);
 
@@ -210,10 +208,8 @@ export default function Home() {
 
   const handleSaveRecipe = () => {
     if (generatedRecipe && !savedRecipes.some(r => r.title === generatedRecipe.title)) {
-      // Create a version of the recipe for saving that does not include large data URIs
       const recipeToSave: GenerateRecipeOutput = {
         ...generatedRecipe,
-        // Replace dynamic image URLs with placeholders for storage
         imageUrls: [
             `https://placehold.co/600x400.png`,
             `https://placehold.co/600x400.png`,
@@ -228,26 +224,26 @@ export default function Home() {
       });
     }
   };
-  
-  const handleDeleteRecipe = (titleToDelete: string) => {
-    setSavedRecipes(savedRecipes.filter(r => r.title !== titleToDelete));
-    toast({
-        title: "Recipe Deleted",
-        description: `"${titleToDelete}" has been removed.`,
-    });
-  };
 
   const isRecipeSaved = generatedRecipe && savedRecipes.some(r => r.title === generatedRecipe.title);
 
   return (
     <div className="min-h-screen bg-background font-body text-foreground">
       <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        <header className="text-center mb-10">
-          <div className="flex justify-center items-center gap-4 mb-2">
-            <UtensilsCrossed className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Fridge Feast</h1>
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex-1">
+            <div className="flex justify-center lg:justify-start items-center gap-4 mb-2">
+              <UtensilsCrossed className="h-10 w-10 text-primary" />
+              <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Fridge Feast</h1>
+            </div>
+            <p className="text-lg text-muted-foreground text-center lg:text-left">Your personal chef for ingredients on hand.</p>
           </div>
-          <p className="text-lg text-muted-foreground">Your personal chef for ingredients on hand.</p>
+          <Link href="/saved-recipes" passHref>
+            <Button variant="outline">
+              <Bookmark className="mr-2 h-5 w-5" />
+              My Saved Recipes
+            </Button>
+          </Link>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8">
@@ -471,67 +467,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {savedRecipes.length > 0 && (
-          <section className="mt-12">
-            <Separator className="my-8" />
-            <h2 className="text-3xl font-headline font-bold text-center mb-6">Your Saved Recipes</h2>
-            <Accordion type="single" collapsible className="w-full">
-              {savedRecipes.map(recipe => (
-                <AccordionItem key={recipe.title} value={recipe.title}>
-                  <div className="flex items-center pr-4">
-                    <AccordionTrigger className="font-headline text-xl hover:no-underline flex-1">
-                      {recipe.title}
-                    </AccordionTrigger>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0" onClick={() => handleDeleteRecipe(recipe.title)}>
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  <AccordionContent className="p-4 flex flex-col sm:flex-row gap-4">
-                    {recipe.imageUrls && recipe.imageUrls.length > 0 && (
-                         <div className="w-full sm:w-1/3">
-                            <Carousel className="w-full">
-                               <CarouselContent>
-                                {recipe.imageUrls.map((url, index) => (
-                                    <CarouselItem key={index}>
-                                        <Image 
-                                            src={url}
-                                            alt={`${recipe.title} - image ${index + 1}`}
-                                            width={300}
-                                            height={200}
-                                            className="w-full h-auto rounded-md object-cover"
-                                            data-ai-hint="recipe food"
-                                        />
-                                    </CarouselItem>
-                                ))}
-                               </CarouselContent>
-                               <CarouselPrevious />
-                               <CarouselNext />
-                            </Carousel>
-                        </div>
-                    )}
-                    <div className={recipe.imageUrls && recipe.imageUrls.length > 0 ? "w-full sm:w-2/3" : "w-full"}>
-                      {recipe.cookingTime && (
-                         <div className="flex items-center text-sm text-muted-foreground mb-4">
-                            <Clock className="h-4 w-4 mr-1.5" />
-                            <span>{recipe.cookingTime}</span>
-                        </div>
-                      )}
-                      <h3 className="font-bold font-headline mb-2 text-md">Ingredients</h3>
-                      <p className="text-muted-foreground mb-4">{recipe.ingredients}</p>
-                      <h3 className="font-bold font-headline mb-2 text-md">Instructions</h3>
-                      <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                         {recipe.instructions.split('\n').filter(line => line.trim() !== '').map((line, index) => (
-                           <li key={index}>{line.replace(/^\d+\.\s*/, '')}</li>
-                         ))}
-                      </ol>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </section>
-        )}
       </main>
     </div>
   );
