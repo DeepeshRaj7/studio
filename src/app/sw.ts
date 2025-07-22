@@ -14,7 +14,7 @@ const manifest = self.__SW_MANIFEST;
 
 installSerwist({
   precacheEntries: manifest,
-  runtimeCaching: defaultCache, // Use default caching strategies
+  runtimeCaching: defaultCache, // Use  default caching strategies
 });
 
 // Add your custom service worker logic here (e.g., push notifications)
