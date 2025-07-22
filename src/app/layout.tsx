@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'What Can I Cook',
   description: 'Generate recipes from ingredients you have.',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
