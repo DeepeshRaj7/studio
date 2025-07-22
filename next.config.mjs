@@ -3,7 +3,7 @@ import withSerwistInit from '@serwist/next';
 
 const withSerwist = withSerwistInit({
   // Your Serwist PWA configuration
-  swSrc: 'app/sw.ts', // Make sure this path is correct relative to your project root
+  swSrc: 'src/app/sw.ts', // Make sure this path is correct relative to your project root
   swDest: 'public/sw.js',
   disable: process.env.NODE_ENV === 'development', // Good practice to disable in dev
   // Add any other Serwist options here, like runtimeCaching if needed
