@@ -141,7 +141,7 @@ const generateRecipeFlow = ai.defineFlow(
     return {
         ...recipeDetails,
         imageUrls: imageUrls,
-        imageDataUris: imageUrls, // Sending back data uris
+        imageDataUris: [], // Do not send back image data uris
     };
   }
 );

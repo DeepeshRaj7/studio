@@ -109,7 +109,18 @@ export default function Home() {
   useEffect(() => { localStorage.setItem(PANTRY_STORAGE_KEY, JSON.stringify(pantryIngredients)); }, [pantryIngredients]);
   useEffect(() => { localStorage.setItem(COOKING_LIST_STORAGE_KEY, JSON.stringify(cookingList)); }, [cookingList]);
   useEffect(() => { localStorage.setItem(DIETARY_STORAGE_KEY, JSON.stringify(dietaryRestrictions)); }, [dietaryRestrictions]);
-  useEffect(() => { localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes)); }, [savedRecipes]);
+  useEffect(() => { 
+    try {
+        localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(savedRecipes)); 
+    } catch (e) {
+        console.error("Failed to save recipes to localStorage", e);
+        toast({
+            variant: "destructive",
+            title: "Could not save recipes",
+            description: "There was an error saving your recipes. The browser storage might be full."
+        })
+    }
+  }, [savedRecipes, toast]);
   useEffect(() => { localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisine)); }, [cuisine]);
 
   useEffect(() => {
@@ -199,7 +210,18 @@ export default function Home() {
 
   const handleSaveRecipe = () => {
     if (generatedRecipe && !savedRecipes.some(r => r.title === generatedRecipe.title)) {
-      setSavedRecipes([...savedRecipes, generatedRecipe]);
+      // Create a version of the recipe for saving that does not include large data URIs
+      const recipeToSave: GenerateRecipeOutput = {
+        ...generatedRecipe,
+        // Replace dynamic image URLs with placeholders for storage
+        imageUrls: [
+            `https://placehold.co/600x400.png`,
+            `https://placehold.co/600x400.png`,
+            `https://placehold.co/600x400.png`,
+        ],
+        imageDataUris: [],
+      };
+      setSavedRecipes([...savedRecipes, recipeToSave]);
       toast({
         title: "Recipe Saved!",
         description: `"${generatedRecipe.title}" has been added to your collection.`,
