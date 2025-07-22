@@ -81,10 +81,10 @@ export default function SavedRecipesPage() {
                       <Trash2 className="h-5 w-5" />
                     </Button>
                 </div>
-                <AccordionContent className="p-4 flex flex-col sm:flex-row gap-4">
+                <AccordionContent className="p-4 flex flex-col gap-4">
                   {recipe.imageUrls && recipe.imageUrls.length > 0 && (
-                       <div className="w-full sm:w-1/3">
-                          <Carousel className="w-full">
+                       <div className="w-full">
+                          <Carousel className="w-full max-w-sm mx-auto">
                              <CarouselContent>
                               {recipe.imageUrls.map((url, index) => (
                                   <CarouselItem key={index}>
@@ -104,7 +104,7 @@ export default function SavedRecipesPage() {
                           </Carousel>
                       </div>
                   )}
-                  <div className={recipe.imageUrls && recipe.imageUrls.length > 0 ? "w-full sm:w-2/3" : "w-full"}>
+                  <div className="w-full">
                     {recipe.cookingTime && (
                        <div className="flex items-center text-sm text-muted-foreground mb-4">
                           <Clock className="h-4 w-4 mr-1.5" />
