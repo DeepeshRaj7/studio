@@ -1,1 +1,17 @@
-{"node":{"40c02a06d33b709936c729edcd2dee6c5baa48ca5e":{"workers":{"app/page":{"moduleId":"88063","async":false}},"layer":{"app/page":"action-browser"}}},"edge":{},"encryptionKey":"NTF2rfmBcMyPl+CpCGcoYfjLFFtD09Y/EVbQ78ychaA="}
+{
+  "node": {
+    "40db2015e9373136ee507b317c411cb2d274c71136": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/ai/flows/generate-recipe.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "NTF2rfmBcMyPl+CpCGcoYfjLFFtD09Y/EVbQ78ychaA="
+}
